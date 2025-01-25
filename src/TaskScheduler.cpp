@@ -1,22 +1,22 @@
 #include "TaskScheduler.h"
-#include <stdexcept>
 
 void TaskScheduler::addTask(const Task &task)
 {
     if (this->currentTaskCount >= MAX_TASKS)
     {
-        throw std::runtime_error("Maximum task count exceeded");
+        // Call Error Handler
+        return;
     }
     this->tasks[this->currentTaskCount].setNextExecutionTime(this->getSystemTime() + static_cast<uint32_t>(task.getExecutionTime()));
-    this->tasks[this->currentTaskCount] = task;
+    this->tasks[this->currentTaskCount++] = task;
     if (task.getPriority())
     {
-        this->setHighPriorityTask(this->currentTaskCount);
-        this->tasks[this->currentTaskCount++].setPriority(false);
+        this->setHighPriorityTask(this->currentTaskCount-1);
+        this->tasks[this->currentTaskCount-1].setPriority(false);
     }
 }
 
-void TaskScheduler::removeAllTasks()
+void TaskScheduler::deleteAllTasks()
 {
     this->clearHighPriorityTask();
     for (size_t i = 0; i < this->currentTaskCount; ++i)
@@ -26,21 +26,35 @@ void TaskScheduler::removeAllTasks()
     this->currentTaskCount = 0;
 }
 
-void TaskScheduler::removeTask(int index)
+void TaskScheduler::deleteTask(int index)
 {
     if (index < 0 || index >= static_cast<int>(this->currentTaskCount))
     {
-        throw std::runtime_error("Task index out of range");
+        // Call Error Handler
+        return;
     }
     if (this->tasks[index].getPriority())
     {
         this->clearHighPriorityTask();
     }
-    for (size_t i = index; i < this->currentTaskCount - 1; ++i)
+    for (size_t i = index; i < this->currentTaskCount; ++i)
     {
         this->tasks[i] = this->tasks[i + 1];
     }
     --this->currentTaskCount;
+}
+
+void TaskScheduler::deleteTask(TaskFunction matchFunction)
+{
+    for (size_t i = 0; i < this->currentTaskCount; ++i)
+    {
+        if (matchFunction == this->tasks[i].getTaskFunction())
+        {
+            this->deleteTask(static_cast<int>(i));
+            return;
+        }
+    }
+    // Call Error Handler if task not found
 }
 
 void TaskScheduler::run()
@@ -75,7 +89,7 @@ bool TaskScheduler::buryKilledTasks(int index)
 {
     if (this->tasks[index].getStatus() == Task::Status::KILLED)
     {
-        this->removeTask(index);
+        this->deleteTask(index);
         return true;
     }
     return false;
@@ -162,6 +176,7 @@ void TaskScheduler::analyzeSystemTime(uint32_t start, uint32_t end)
     uint32_t duration = end - start;
     if (duration > MAX_EXECUTION_TIME)
     {
-        throw std::runtime_error("Tasks are taking too long to execute");
+        // Call Error Handler
+        return;
     }
 }

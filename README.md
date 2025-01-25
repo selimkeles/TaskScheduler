@@ -3,6 +3,10 @@
 ## Overview
 The C++ Task Scheduler is a lightweight, clock-driven task scheduling library designed for embedded systems. It allows users to manage tasks efficiently with features such as prioritization, delayed execution, and task state management.
 
+## ToDo
+- **Error Handler** Directory and subclass  will be added
+- Add Unity C tests
+
 ## Features
 - **High Priority Tasks**: Temporarily elevate the priority of a task using external interrupts.
 - **Delayed Task Execution**: Start tasks after a specified delay.

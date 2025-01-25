@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Task.h"
-#include <array>
 #include <cstdint>
+#include <cstddef>
 
 #define MAX_EXECUTION_TIME 50             // In milliseconds (for all tasks)
 #define SYS_TIME_OVF_THRESHOLD 0x80000000 // Max signed 32-bit integer value
@@ -11,8 +11,9 @@ class TaskScheduler
 {
 public:
     void addTask(const Task &task);
-    void removeAllTasks();
-    void removeTask(int index);
+    void deleteAllTasks();
+    void deleteTask(int index);
+    void deleteTask(TaskFunction matchFunction);
     void run();
     void stop();
     bool getSchedulerStatus() const;
@@ -23,7 +24,7 @@ private:
     bool schedulerStatus = false;
     bool highPriorityTask = false;
     int highPriorityTaskIndex = 0;
-    std::array<Task, MAX_TASKS> tasks;
+    Task tasks[MAX_TASKS];
     size_t currentTaskCount = 0;
     uint32_t systemTime = 0;
 

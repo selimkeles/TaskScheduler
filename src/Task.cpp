@@ -71,3 +71,8 @@ void *Task::getUserInput() const
 {
     return this->user_input;
 }
+
+TaskFunction Task::getTaskFunction() const
+{
+    return this->taskFunction;
+}

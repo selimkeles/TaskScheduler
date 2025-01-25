@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include "stdint.h"
 
 typedef void (*TaskFunction)(void *user_input);
 
@@ -9,6 +9,7 @@ typedef void (*TaskFunction)(void *user_input);
 // Callback times for periodic tasks
 enum class CallbackTime : uint32_t
 {
+    CB_INSTANT = 0x00,
     CB_1MS = 0x02,
     CB_10MS = CB_1MS * 10,
     CB_20MS = CB_10MS * 2,
@@ -46,13 +47,18 @@ class Task
 public:
     enum class Status
     {
+        INACTIVE, // Constructor Option
         ACTIVE,
         PAUSED,
         KILLED
     };
-
-    Task(CallbackTime executionTime, CallbackTime period, bool priority, TaskFunction func, void *user_input)
-        : executionTime(executionTime), period(period), priority(priority), status(Status::ACTIVE), taskFunction(func), user_input(user_input), nextExecutionTime(0) {}
+    Task() : executionTime(CallbackTime::CB_INSTANT), period(CallbackTime::CB_1MS), priority(false), user_input(nullptr), taskFunction(nullptr), status(Status::INACTIVE), nextExecutionTime(0) {} // Default constructor
+    Task(CallbackTime period, TaskFunction func)    // Constructor with instant operation and no user input
+        : executionTime(CallbackTime::CB_INSTANT), period(period), priority(false), user_input(nullptr), taskFunction(func), status(Status::ACTIVE), nextExecutionTime(0) {}
+    Task(CallbackTime period, void *user_input, TaskFunction func)   // Constructor with instant operation
+        : executionTime(CallbackTime::CB_INSTANT), period(period), priority(false), user_input(user_input), taskFunction(func), status(Status::ACTIVE), nextExecutionTime(0) {}
+    Task(CallbackTime executionTime, CallbackTime period, void *user_input, TaskFunction func)
+        : executionTime(executionTime), period(period), priority(false), user_input(user_input), taskFunction(func), status(Status::ACTIVE), nextExecutionTime(0) {}
 
     void execute();
     void pause();
@@ -66,13 +72,14 @@ public:
     uint32_t getNextExecutionTime() const;
     void setNextExecutionTime(uint32_t time);
     void *getUserInput() const;
+    TaskFunction getTaskFunction() const;
 
 private:
-    void *user_input;
     CallbackTime executionTime;
-    bool priority;
     CallbackTime period;
-    Status status;
+    bool priority;
+    void *user_input;
     TaskFunction taskFunction;
+    Status status;
     uint32_t nextExecutionTime;
 };
