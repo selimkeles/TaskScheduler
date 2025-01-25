@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include "../include/Task.h"
+#include "Task.h"
 
 class TaskTest : public ::testing::Test {
 protected:
     Task* task;
 
     void SetUp() override {
-        task = new Task(1, 1000); // Task ID 1, execution time 1000 ms
+        task = new Task(1, 1000, true, [](void*){});
     }
 
     void TearDown() override {

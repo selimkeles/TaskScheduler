@@ -1,16 +1,45 @@
+#pragma once
+
+#include <cstdint>
+
 typedef void (*TaskFunction)(void *user_input);
 
 #define MAX_TASKS 20
 
 // Callback times for periodic tasks
-#define CB_1MS      (0x02)             // Love for power of 2, MCU friendly
-#define CB_10MS     (CB_1MS*10)
-#define CB_100MS    (CB_10MS*10)
-#define CB_500MS    (CB_100MS*5)
-#define CB_1S       (CB_1MS*1000)
-#define CB_1M       (CB_1S*60)
-#define CB_1H       (CB_1M*60)
-#define CB_1D       (CB_1H*24)
+enum class CallbackTime : uint32_t
+{
+    CB_1MS = 0x02,
+    CB_10MS = CB_1MS * 10,
+    CB_20MS = CB_10MS * 2,
+    CB_30MS = CB_10MS * 3,
+    CB_50MS = CB_10MS * 5,
+    CB_100MS = CB_10MS * 10,
+    CB_200MS = CB_100MS * 2,
+    CB_300MS = CB_100MS * 3,
+    CB_500MS = CB_100MS * 5,
+    CB_1S = CB_100MS * 10,
+    CB_2S = CB_1S * 2,
+    CB_3S = CB_1S * 3,
+    CB_5S = CB_1S * 5,
+    CB_10S = CB_1S * 10,
+    CB_15S = CB_1S * 15,
+    CB_30S = CB_1S * 30,
+    CB_45S = CB_1S * 45,
+    CB_1M = CB_1S * 60,
+    CB_2M = CB_1M * 2,
+    CB_5M = CB_1M * 5,
+    CB_10M = CB_1M * 10,
+    CB_15M = CB_1M * 15,
+    CB_30M = CB_1M * 30,
+    CB_45M = CB_1M * 45,
+    CB_1H = CB_1M * 60,
+    CB_2H = CB_1H * 2,
+    CB_4H = CB_2H * 2,
+    CB_8H = CB_4H * 2,
+    CB_12H = CB_1H * 12,
+    CB_1D = CB_12H * 2
+};
 
 class Task
 {
@@ -21,26 +50,29 @@ public:
         PAUSED,
         KILLED
     };
-    
-    Task(int executionTime, int period, bool priority, TaskFunction func, void *user_input) : executionTime(executionTime), period(period), priority(priority), status(Status::ACTIVE), taskFunction(func), user_input(user_input){}
+
+    Task(CallbackTime executionTime, CallbackTime period, bool priority, TaskFunction func, void *user_input)
+        : executionTime(executionTime), period(period), priority(priority), status(Status::ACTIVE), taskFunction(func), user_input(user_input), nextExecutionTime(0) {}
+
     void execute();
     void pause();
     void resume();
     void kill();
     Status getStatus() const;
-    int getExecutionTime() const;
+    CallbackTime getExecutionTime() const;
     bool getPriority() const;
     void setPriority(bool value);
-    int getPeriod() const;
-    unsigned long getNextExecutionTime() const;
-    void setNextExecutionTime(unsigned long time);
+    CallbackTime getPeriod() const;
+    uint32_t getNextExecutionTime() const;
+    void setNextExecutionTime(uint32_t time);
     void *getUserInput() const;
+
 private:
     void *user_input;
-    int executionTime;
+    CallbackTime executionTime;
     bool priority;
-    int period = CB_1S; // Default period is 1 second
-    Status status = Status::ACTIVE; // Initialize status to ACTIVE
+    CallbackTime period;
+    Status status;
     TaskFunction taskFunction;
-    unsigned long nextExecutionTime;
+    uint32_t nextExecutionTime;
 };

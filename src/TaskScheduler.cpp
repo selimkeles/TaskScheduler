@@ -3,43 +3,44 @@
 
 void TaskScheduler::addTask(const Task &task)
 {
-    if (currentTaskCount >= MAX_TASKS)
+    if (this->currentTaskCount >= MAX_TASKS)
     {
         throw std::runtime_error("Maximum task count exceeded");
     }
-    tasks[currentTaskCount].setNextExecutionTime(getSystemTime() + task.getExecutionTime());
-    tasks[currentTaskCount] = task;
-    if (task.getPriority() == true)
+    this->tasks[this->currentTaskCount].setNextExecutionTime(this->getSystemTime() + static_cast<uint32_t>(task.getExecutionTime()));
+    this->tasks[this->currentTaskCount] = task;
+    if (task.getPriority())
     {
-        setHighPriorityTask(currentTaskCount);
-        tasks[currentTaskCount++].setPriority(false);
+        this->setHighPriorityTask(this->currentTaskCount);
+        this->tasks[this->currentTaskCount++].setPriority(false);
     }
 }
 
 void TaskScheduler::removeAllTasks()
 {
-    clearHighPriorityTask();
-    for (size_t i = 0; i < currentTaskCount - 1; ++i)
+    this->clearHighPriorityTask();
+    for (size_t i = 0; i < this->currentTaskCount; ++i)
     {
-        tasks[i].kill();
+        this->tasks[i].kill();
     }
+    this->currentTaskCount = 0;
 }
 
 void TaskScheduler::removeTask(int index)
 {
-    if (index < 0 || index >= currentTaskCount)
+    if (index < 0 || index >= static_cast<int>(this->currentTaskCount))
     {
         throw std::runtime_error("Task index out of range");
     }
-    if (tasks[index].getPriority() == true)
+    if (this->tasks[index].getPriority())
     {
-        clearHighPriorityTask();
+        this->clearHighPriorityTask();
     }
-    for (size_t i = index; i < currentTaskCount - 1; i++)
+    for (size_t i = index; i < this->currentTaskCount - 1; ++i)
     {
-        tasks[i] = tasks[i + 1];
+        this->tasks[i] = this->tasks[i + 1];
     }
-    --currentTaskCount;
+    --this->currentTaskCount;
 }
 
 void TaskScheduler::run()
@@ -47,76 +48,83 @@ void TaskScheduler::run()
     this->setSchedulerStatus(true);
     while (this->getSchedulerStatus())
     {
-        unsigned int start = getSystemTime();
-        for (size_t index = 0; index < currentTaskCount; index++)
+        uint32_t start = this->getSystemTime();
+        for (size_t index = 0; index < this->currentTaskCount; ++index)
         {
-            if (buryKilledTasks(index)) {
-                index--;
+            if (this->buryKilledTasks(index))
+            {
+                --index;
                 continue;
             }
-            if (shiftPausedTasks(index)) continue;
-            if (tasks[index].getStatus() == Task::Status::ACTIVE && getSystemTime() >= tasks[index].getNextExecutionTime())
+            if (this->shiftPausedTasks(index))
             {
-                tasks[index].execute();
-                tasks[index].setNextExecutionTime(getSystemTime() + tasks[index].getPeriod());
+                continue;
+            }
+            if (this->tasks[index].getStatus() == Task::Status::ACTIVE && this->getSystemTime() >= this->tasks[index].getNextExecutionTime())
+            {
+                this->tasks[index].execute();
+                this->tasks[index].setNextExecutionTime(this->getSystemTime() + static_cast<uint32_t>(this->tasks[index].getPeriod()));
             }
         }
-        unsigned int end = getSystemTime();
-        analyzeSystemTime(start, end);
+        uint32_t end = this->getSystemTime();
+        this->analyzeSystemTime(start, end);
     }
 }
 
 bool TaskScheduler::buryKilledTasks(int index)
 {
-    if (tasks[index].getStatus() == Task::Status::KILLED)
+    if (this->tasks[index].getStatus() == Task::Status::KILLED)
     {
-        removeTask(index);
+        this->removeTask(index);
+        return true;
     }
+    return false;
 }
 
 bool TaskScheduler::shiftPausedTasks(int index)
 {
-    if (tasks[index].getStatus() == Task::Status::PAUSED)
+    if (this->tasks[index].getStatus() == Task::Status::PAUSED)
     {
-        tasks[index].setNextExecutionTime(tasks[index].getNextExecutionTime() + CB_1MS);    // Ugly I know, but it works
+        this->tasks[index].setNextExecutionTime(this->tasks[index].getNextExecutionTime() + static_cast<uint32_t>(CallbackTime::CB_1MS));
+        return true;
     }
+    return false;
 }
 
 void TaskScheduler::checkHighPriorityTask()
 {
-    if (getHighPriorityTaskIndex())
+    if (this->getHighPriorityTaskIndex() != 0)
     {
-        tasks[getHighPriorityTaskIndex()].execute();
-        tasks[getHighPriorityTaskIndex()].setNextExecutionTime(getSystemTime() + tasks[HighPriorityTaskIndex].getPeriod());
-        tasks[getHighPriorityTaskIndex()].setPriority(false);
-        clearHighPriorityTask();
+        this->tasks[this->getHighPriorityTaskIndex()].execute();
+        this->tasks[this->getHighPriorityTaskIndex()].setNextExecutionTime(this->getSystemTime() + static_cast<uint32_t>(this->tasks[this->highPriorityTaskIndex].getPeriod()));
+        this->tasks[this->getHighPriorityTaskIndex()].setPriority(false);
+        this->clearHighPriorityTask();
     }
 }
 
 void TaskScheduler::clearHighPriorityTask()
 {
-    highPriorityTask = false;
-    HighPriorityTaskIndex = 0;
+    this->highPriorityTask = false;
+    this->highPriorityTaskIndex = 0;
 }
 
 void TaskScheduler::setHighPriorityTask(int index)
 {
-    highPriorityTask = true;
-    HighPriorityTaskIndex = index;
+    this->highPriorityTask = true;
+    this->highPriorityTaskIndex = index;
 }
 
-int TaskScheduler::getHighPriorityTaskIndex()
+int TaskScheduler::getHighPriorityTaskIndex() const
 {
-    if (highPriorityTask != false && HighPriorityTaskIndex != 0) return HighPriorityTaskIndex;
-    return 0;
+    return this->highPriorityTask ? this->highPriorityTaskIndex : 0;
 }
 
 void TaskScheduler::stop()
 {
-    setSchedulerStatus(false);
+    this->setSchedulerStatus(false);
 }
 
-bool TaskScheduler::getSchedulerStatus()
+bool TaskScheduler::getSchedulerStatus() const
 {
     return this->schedulerStatus;
 }
@@ -128,30 +136,30 @@ void TaskScheduler::setSchedulerStatus(bool status)
 
 void TaskScheduler::increaseSystemTime()
 {
-    systemTime += CB_1MS;
-    normalizeSystemTime();
+    this->systemTime += static_cast<uint32_t>(CallbackTime::CB_1MS);
+    this->normalizeSystemTime();
 }
 
 void TaskScheduler::normalizeSystemTime()
 {
-    if (getSystemTime() >= SYS_TIME_OVF_THRESHOLD + CB_1H)
+    if (this->getSystemTime() >= SYS_TIME_OVF_THRESHOLD + static_cast<uint32_t>(CallbackTime::CB_1H))
     {
-        systemTime -= SYS_TIME_OVF_THRESHOLD;
-        for (size_t i = 0; i < currentTaskCount; ++i)
+        this->systemTime -= SYS_TIME_OVF_THRESHOLD;
+        for (size_t i = 0; i < this->currentTaskCount; ++i)
         {
-            tasks[i].setNextExecutionTime(tasks[i].getNextExecutionTime() - SYS_TIME_OVF_THRESHOLD);
+            this->tasks[i].setNextExecutionTime(this->tasks[i].getNextExecutionTime() - SYS_TIME_OVF_THRESHOLD);
         }
     }
 }
 
 uint32_t TaskScheduler::getSystemTime() const
 {
-    return systemTime;
+    return this->systemTime;
 }
 
-void TaskScheduler::analyzeSystemTime(const unsigned int start, const unsigned int end)
+void TaskScheduler::analyzeSystemTime(uint32_t start, uint32_t end)
 {
-    unsigned long duration = end - start;
+    uint32_t duration = end - start;
     if (duration > MAX_EXECUTION_TIME)
     {
         throw std::runtime_error("Tasks are taking too long to execute");

@@ -2,71 +2,64 @@
 
 void Task::execute()
 {
-    if (status == Status::ACTIVE)
+    if (this->status == Status::ACTIVE)
     {
-        if (taskFunction != nullptr)
+        if (this->taskFunction != nullptr)
         {
-            if (getUserInput() != nullptr)
-            {
-                taskFunction(getUserInput());
-            }
-            else
-            {
-                taskFunction(nullptr);
-            }
+            this->taskFunction(this->user_input);
         }
     }
 }
 
 void Task::pause()
 {
-    if (status == Status::ACTIVE)
+    if (this->status == Status::ACTIVE)
     {
-        status = Status::PAUSED;
+        this->status = Status::PAUSED;
     }
 }
 
 void Task::resume()
 {
-    if (status == Status::PAUSED)
+    if (this->status == Status::PAUSED)
     {
-        status = Status::ACTIVE;
+        this->status = Status::ACTIVE;
     }
 }
 
 void Task::kill()
 {
-    status = Status::KILLED;
+    this->status = Status::KILLED;
 }
 
 Task::Status Task::getStatus() const
 {
-    return status;
+    return this->status;
 }
 
-int Task::getExecutionTime() const
+CallbackTime Task::getExecutionTime() const
 {
-    return executionTime;
+    return this->executionTime;
 }
 
-int Task::getPeriod() const
+CallbackTime  Task::getPeriod() const
 {
-    return period;
+    return this->period;
 }
 
-unsigned long Task::getNextExecutionTime() const
+uint32_t Task::getNextExecutionTime() const
 {
-    return nextExecutionTime;
+    return this->nextExecutionTime;
 }
 
-void Task::setNextExecutionTime(unsigned long time)
+void Task::setNextExecutionTime(uint32_t time)
 {
-    nextExecutionTime = time;
+    this->nextExecutionTime = time;
 }
 
 bool Task::getPriority() const
 {
-    return priority;
+    return this->priority;
 }
 
 void Task::setPriority(bool value)
@@ -76,5 +69,5 @@ void Task::setPriority(bool value)
 
 void *Task::getUserInput() const
 {
-    return user_input;
+    return this->user_input;
 }
