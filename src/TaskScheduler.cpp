@@ -26,7 +26,7 @@ void TaskScheduler::deleteAllTasks()
     this->currentTaskCount = 0;
 }
 
-void TaskScheduler::deleteTask(int index)
+void TaskScheduler::deleteTask(size_t index)
 {
     if (index < 0 || index >= static_cast<int>(this->currentTaskCount))
     {
@@ -85,7 +85,7 @@ void TaskScheduler::run()
     }
 }
 
-bool TaskScheduler::buryKilledTasks(int index)
+bool TaskScheduler::buryKilledTasks(size_t index)
 {
     if (this->tasks[index].getStatus() == Task::Status::KILLED)
     {
@@ -95,7 +95,7 @@ bool TaskScheduler::buryKilledTasks(int index)
     return false;
 }
 
-bool TaskScheduler::shiftPausedTasks(int index)
+bool TaskScheduler::shiftPausedTasks(size_t index)
 {
     if (this->tasks[index].getStatus() == Task::Status::PAUSED)
     {
@@ -122,13 +122,13 @@ void TaskScheduler::clearHighPriorityTask()
     this->highPriorityTaskIndex = 0;
 }
 
-void TaskScheduler::setHighPriorityTask(int index)
+void TaskScheduler::setHighPriorityTask(size_t index)
 {
     this->highPriorityTask = true;
     this->highPriorityTaskIndex = index;
 }
 
-int TaskScheduler::getHighPriorityTaskIndex() const
+size_t TaskScheduler::getHighPriorityTaskIndex() const
 {
     return this->highPriorityTask ? this->highPriorityTaskIndex : 0;
 }

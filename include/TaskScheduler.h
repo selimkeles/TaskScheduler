@@ -12,7 +12,7 @@ class TaskScheduler
 public:
     void addTask(const Task &task);
     void deleteAllTasks();
-    void deleteTask(int index);
+    void deleteTask(size_t index);
     void deleteTask(TaskFunction matchFunction);
     void run();
     void stop();
@@ -23,18 +23,18 @@ public:
 private:
     bool schedulerStatus = false;
     bool highPriorityTask = false;
-    int highPriorityTaskIndex = 0;
+    size_t highPriorityTaskIndex = 0;
     Task tasks[MAX_TASKS];
     size_t currentTaskCount = 0;
     uint32_t systemTime = 0;
 
     void analyzeSystemTime(uint32_t start, uint32_t end);
-    bool buryKilledTasks(int index);
-    bool shiftPausedTasks(int index);
+    bool buryKilledTasks(size_t index);
+    bool shiftPausedTasks(size_t index);
     void checkHighPriorityTask();
     void clearHighPriorityTask();
-    void setHighPriorityTask(int index);
-    int getHighPriorityTaskIndex() const;
+    void setHighPriorityTask(size_t index);
+    size_t getHighPriorityTaskIndex() const;
     void normalizeSystemTime();
     uint32_t getSystemTime() const;
 };
